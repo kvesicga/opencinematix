@@ -12,13 +12,13 @@ build/
 *.so
 *.a
 
-# --- Referenz-Repos -------------------------------------------------------
-# cinemate & Co. werden hier zum Nachlesen geklont, sind aber fremde Repos
-# und duerfen nicht als Submodule in die eigene History geraten.
+# --- Reference repositories -----------------------------------------------
+# cinemate and friends get cloned here for reference. They are foreign repos
+# and must not end up as submodules in this project's history.
 /reference/
 
-# --- Laufzeit-Artefakte ---------------------------------------------------
-# Aufnahmen gehoeren nie ins Repo: eine Minute 12-bit-DNG sind mehrere GB.
+# --- Runtime artefacts ----------------------------------------------------
+# Footage never belongs in the repo: one minute of 12-bit DNG is several GB.
 *.log
 *.dng
 *.mp4
