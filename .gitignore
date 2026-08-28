@@ -1,0 +1,30 @@
+# --- Python ---------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# --- C++ / Meson build ----------------------------------------------------
+build/
+*.o
+*.so
+*.a
+
+# --- Referenz-Repos -------------------------------------------------------
+# cinemate & Co. werden hier zum Nachlesen geklont, sind aber fremde Repos
+# und duerfen nicht als Submodule in die eigene History geraten.
+/reference/
+
+# --- Laufzeit-Artefakte ---------------------------------------------------
+# Aufnahmen gehoeren nie ins Repo: eine Minute 12-bit-DNG sind mehrere GB.
+*.log
+*.dng
+*.mp4
+/footage/
+
+# --- Editor / OS ----------------------------------------------------------
+.vscode/
+*.swp
+.DS_Store
