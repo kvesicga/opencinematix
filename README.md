@@ -108,15 +108,26 @@ has to implement the same guard.
 
 ## Repository layout
 
+Layered, each layer depending only on the one below it.
+
 ```
-src/opencinematix/   Python package: UI, Redis client, OLED menu
-src/native/          C++ components
-docs/                build log, architecture and hardware notes
+ui/                  OLED menu, later a web frontend
+control/             Redis client and control plane
+core/                parameter model
+core/hal/            capability contracts, drivers, bindings
+post/                darktable pipeline, switchable at runtime
+config/              hardware description, bindings, looks
+hardware/            PCB and mechanical design files
 services/            systemd units
-scripts/             setup and helper scripts
-config/              configuration (looks, defaults)
+scripts/             build and setup scripts
 tests/               tests that run without hardware
+docs/                build log and notes
+docs/decisions/      numbered architecture decision records
+docs/measurements/   throughput, drop rate, thermal data
 ```
+
+There is no capture layer in this repository. cinepi-raw fills that role and
+is built from source by `scripts/build-cinepi-base.sh`.
 
 ## Status
 
