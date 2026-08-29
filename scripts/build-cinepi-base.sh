@@ -6,6 +6,7 @@
 #   ./build-cinepi-base.sh              run every stage in order
 #   ./build-cinepi-base.sh deps         run a single stage
 #   ./build-cinepi-base.sh list         show available stages
+#   ./build-cinepi-base.sh preview      HDMI preview, not part of a full run
 #
 # Stages are idempotent: rerunning one re-checks out the pinned revision and
 # rebuilds. Set FORCE_WIPE=1 to discard existing meson build directories.
@@ -18,6 +19,15 @@ source "$SCRIPT_DIR/versions.env"
 SRC_DIR="${SRC_DIR:-$HOME/src}"
 JOBS="${JOBS:-$(nproc)}"
 FORCE_WIPE="${FORCE_WIPE:-0}"
+
+CAM_PORT="${CAM_PORT:-cam0}"
+CAM_MODE="${CAM_MODE:-2028:1080:12:P}"
+CAM_WIDTH="${CAM_WIDTH:-2028}"
+CAM_HEIGHT="${CAM_HEIGHT:-1080}"
+LORES_WIDTH="${LORES_WIDTH:-1280}"
+LORES_HEIGHT="${LORES_HEIGHT:-720}"
+PREVIEW_RECT="${PREVIEW_RECT:-0,30,1920,1020}"
+PREVIEW_MS="${PREVIEW_MS:-10000}"
 
 log()  { printf '\n\033[1;34m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m[warn]\033[0m %s\n' "$*" >&2; }
@@ -175,6 +185,16 @@ stage_verify() {
     fi
 
     cinepi-raw --list-cameras
+}
+
+# The preview draws from the lores stream; without it the screen stays black.
+stage_preview() {
+    log "HDMI preview (${PREVIEW_MS} ms)"
+    cinepi-raw --cam-port "$CAM_PORT" \
+        --mode "$CAM_MODE" --width "$CAM_WIDTH" --height "$CAM_HEIGHT" \
+        --lores-width "$LORES_WIDTH" --lores-height "$LORES_HEIGHT" \
+        -p "$PREVIEW_RECT" \
+        -t "$PREVIEW_MS"
 }
 
 STAGES=(
