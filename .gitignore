@@ -12,17 +12,20 @@ build/
 *.so
 *.a
 
-# --- Reference repositories -----------------------------------------------
-# cinemate and friends get cloned here for reference. They are foreign repos
-# and must not end up as submodules in this project's history.
-/reference/
-
 # --- Runtime artefacts ----------------------------------------------------
 # Footage never belongs in the repo: one minute of 12-bit DNG is several GB.
 *.log
 *.dng
 *.mp4
 /footage/
+
+# --- Hardware design tools ------------------------------------------------
+hardware/**/Project\ Outputs/
+hardware/**/History/
+hardware/**/__Previews/
+*.SchDocPreview
+*.PcbDocPreview
+*.f3d.bak
 
 # --- Editor / OS ----------------------------------------------------------
 .vscode/
