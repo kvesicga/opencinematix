@@ -1,46 +1,45 @@
 # OpenCinematix
 
-A modular cinema camera platform for the Raspberry Pi — with its own user
-interface and post-processing pipeline, built on top of
+A modular cinema camera platform for the Raspberry Pi, with its own user
+interface and post-processing pipeline. It builds on
 [cinepi-raw](https://github.com/cinepi/cinepi-raw) as the recording backend.
 
 The project is deliberately not tied to a single sensor. The current setup
-uses the HQ Camera Module (IMX477); the architecture is meant to accommodate
+uses the HQ Camera Module (IMX477). The architecture is meant to accommodate
 other sensors and additional hardware.
 
-## What it is — and what it is not
+## What it is and what it is not
 
 OpenCinematix uses cinepi-raw as the backend for RAW recording and talks to
-it exclusively over Redis. Everything above that layer — menu navigation,
-control logic, looks, post-processing — is written from scratch.
+it exclusively over Redis. Everything above that layer is written from
+scratch: menu navigation, control logic, looks and post-processing.
 
 This is explicitly **not** a fork of the
 [cinepi-sdk](https://github.com/cinepi/cinepi-sdk) and **not** a copy of
 [cinemate](https://github.com/Tiramisioux/cinemate). Cinemate serves as a
 structural reference and as a source for Pi 4 specific details, but its code
-is not adopted. This repository has its own history; the code is written and
-documented from the ground up.
+is not adopted. This repository has its own history.
 
 ## Hardware
 
-The setup currently in use — not meant as a constraint:
+The setup currently in use. It is not meant as a constraint.
 
 | Component        | Model                                             |
 | ---------------- | ------------------------------------------------- |
 | Board            | Raspberry Pi 4B Rev 1.4, 8 GB                     |
 | Sensor           | HQ Camera Module (IMX477) on CSI port `cam0`      |
-| Preview          | HDMI, 1920×1080 @ 60 Hz — live sensor image only  |
+| Preview          | HDMI, 1920×1080 @ 60 Hz, live sensor image only   |
 | Controls         | Estardyn 1.3" OLED (I²C) + EC11 rotary encoder    |
 | Operating system | Raspberry Pi OS Lite (Bookworm), 64-bit           |
 
-The two displays serve separate purposes: HDMI carries nothing but the live
-preview of the sensor image, while the OLED holds the menu (looks as well as
-ISO, shutter angle, FPS, white balance and resolution).
+The two displays serve separate purposes. HDMI carries nothing but the live
+preview of the sensor image. The OLED holds the menu: looks, ISO, shutter
+angle, FPS, white balance and resolution.
 
 ### Sensor modes (IMX477)
 
 The target for the Pi 4 is **2028×1080 at 12 bit**. 4K is not realistic on
-this platform — the Pi 4 uses the VC4 ISP rather than the Pi 5's PiSP.
+this platform, since the Pi 4 uses the VC4 ISP rather than the Pi 5's PiSP.
 
 | Mode        | Format          | Max FPS |
 | ----------- | --------------- | ------- |
@@ -51,8 +50,8 @@ this platform — the Pi 4 uses the VC4 ISP rather than the Pi 5's PiSP.
 ## Architecture
 
 Redis acts as both **message bus and single source of truth** for the camera
-state. Any process able to speak Redis is therefore a first-class client —
-the OLED menu is simply another subscriber and never needs to know about
+state. Any process able to speak Redis is therefore a first-class client. The
+OLED menu is simply another subscriber and never needs to know about
 cinepi-raw directly.
 
 ```
@@ -82,10 +81,10 @@ SET <key> <value>
 PUBLISH cp_controls <key>
 ```
 
-The crucial detail: the published message carries **only the key name, not
-the value**. Receivers then fetch the current value themselves via
-`GET <key>`. This keeps Redis the single source of truth — the message is
-pure notification, not data transport.
+The published message carries **only the key name, not the value**. Receivers
+fetch the current value themselves via `GET <key>`. The message is pure
+notification, not data transport, which keeps Redis the single source of
+truth.
 
 ### Stats path (unidirectional)
 
@@ -103,9 +102,9 @@ The payload includes `framerate`, `colorTemp`, `focus`, `frameCount`,
 On a bus where everyone listens, a client also receives its own messages
 back. Without a countermeasure this creates feedback loops.
 
-The pattern: whoever writes a value records the key in a `local_updates` set
-and discards the matching message when it comes back. Every client written
-for this project has to implement the same guard.
+Whoever writes a value records the key in a `local_updates` set and discards
+the matching message when it comes back. Every client written for this project
+has to implement the same guard.
 
 ## Repository layout
 
@@ -124,14 +123,45 @@ tests/               tests that run without hardware
 Under development. Current stage: building the cinepi base for Pi 4 and
 IMX477 (libcamera, redis-plus-plus, cpp-mjpeg-streamer, cinepi-raw).
 
-Everything has to be built from source — the prebuilt SDK images are not
+Everything has to be built from source. The prebuilt SDK images are not
 usable on the Pi 4, since the cinepi-sdk officially supports the Pi 5 only.
 
 Planned next: a Redis client in Python (testable locally without hardware),
 the OLED menu over I²C with the EC11 encoder, and a post-processing pipeline
 based on darktable.
 
+## Running cinepi-raw
+
+List cameras:
+
+```bash
+cinepi-raw --list-cameras
+```
+
+Live preview on HDMI, 2028×1080 at 12 bit:
+
+```bash
+cinepi-raw --cam-port cam0 \
+           --mode 2028:1080:12:P --width 2028 --height 1080 \
+           --lores-width 1280 --lores-height 720 \
+           -p 0,30,1920,1020 \
+           -t 10000
+```
+
+Both `--mode` and the lores options are required. Without `--mode` the run
+aborts with `Invalid sensor configuration request`. Without the lores options
+the preview stays black, because it draws from the lores stream.
+
+The `:P` packing suffix is the Pi 4 form. Pi 5 uses `:U`.
+
+Start and stop recording over Redis:
+
+```bash
+redis-cli SET is_recording 1
+redis-cli PUBLISH cp_controls is_recording
+```
+
 ## Documentation
 
-The build process is written down in [`docs/`](docs/) as it happens —
+The build process is written down in [`docs/`](docs/) as it happens,
 including the Pi 4 specifics that differ from the Pi 5.

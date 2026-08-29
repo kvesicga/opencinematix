@@ -29,14 +29,34 @@ Cinemate's guide targets the Pi 5. This setup skips the kernel baseline (`apt-ma
 `-rpi-2712`) and the RP1 overclock. The Pi 4 uses the VC4 ISP;
 both pipelines are still enabled at build time to match the reference config.
 
-`nproc` reports 3, not 4 — `cmdline.txt` has
+`nproc` reports 3, not 4. `cmdline.txt` has
 `isolcpus=managed_irq,domain,3`, reserving core 3 for the camera pipeline.
 
 `cinepi_raw.cpp` needs ~2 GB at `-O3`. Fine with 8 GB and no swap; boards under
 3 GB need temporary zram.
 
-Bookworm ships `libtiff.so.6` while the apps link `.so.5` — the
+Bookworm ships `libtiff.so.6` while the apps link `.so.5`. The
 `libtiff_compat` stage symlinks it.
+
+## Preview requires a lores stream
+
+`cinepi_raw.cpp` feeds the preview from `app.LoresStream()`, and the automatic
+lores sizing in `cinepi_controller.cpp` is commented out. Without
+`--lores-width` and `--lores-height` no lores stream is configured, so the
+preview draws nothing and the screen stays black. No error appears, because
+the DRM window itself is created successfully.
+
+`--mode` is equally mandatory. Without it every sensor mode scores `nan` and
+the run aborts with `Invalid sensor configuration request`.
+
+```bash
+./scripts/build-cinepi-base.sh preview
+```
+
+`--hdmi-port` had no effect here. The log reports
+`HDMI request -1, selected connector -1` regardless of the value passed. The
+fallback picks the first connector that already has a CRTC, which is correct
+with one display attached.
 
 ## Verified result
 
