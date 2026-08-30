@@ -5,8 +5,8 @@ CHANNEL_CONTROLS = "cp_controls"
 
 
 class RedisClient:
-    def __init__(self, host="127.0.0.1", port=6379, on_change=None):
-        self.r = redis.Redis(host=host, port=port, decode_responses=True)
+    def __init__(self, host = "127.0.0.1", port = 6379, db = 0, on_change = None):
+        self.r = redis.Redis(host = host, port = port, db = db, decode_responses = True)
 
         self.local_updates = set()
         self.lock = threading.Lock()
