@@ -93,6 +93,11 @@ stage_deps() {
         redis-server libhiredis-dev
 }
 
+stage_python_deps() {
+    log "Python dependencies"
+    sudo apt-get install -y python3-redis python3-pytest
+}
+
 # Bookworm ships libtiff.so.6; the libcamera apps still link against .so.5.
 stage_libtiff_compat() {
     log "libtiff .so.5 compatibility link"
@@ -200,6 +205,7 @@ stage_preview() {
 STAGES=(
     preflight
     deps
+    python_deps
     libtiff_compat
     redis_pp
     libcamera
