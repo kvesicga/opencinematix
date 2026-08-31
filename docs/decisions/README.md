@@ -14,4 +14,13 @@ Open decisions carried over from the project plan:
 | D-02 | Driver registration: static registry or `dlopen` plugins |
 | D-06 | Reference sensor for the first working configuration |
 | D-07 | Back-pressure policy when the writer cannot keep up |
-| D-08 | Config file format for hardware description |
+
+Resolved: D-08 in [0001-config-format.md](0001-config-format.md).
+
+Known gaps in `config/parameters.yaml`:
+
+- Shutter angle and shutter speed are coupled in cinepi-raw
+  (`shutter_s = 1 / (fps * 360 / shutter_a)`). Changing FPS changes the
+  exposure time, so the menu has to recompute what it shows.
+- Selecting a mode has to write `width`, `height`, `bit_depth` and `packing`
+  to Redis, not a single key. cinepi-raw reads them separately.

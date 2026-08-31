@@ -1,0 +1,69 @@
+# Parameters exposed by the OLED menu.
+#
+# key      Redis key cinepi-raw reads
+# type     int, float, enum, bool or mode
+# values   fixed steps, encoder jumps between them
+# range    continuous [min, max], encoder walks it
+# live     may change while recording
+#
+# The sensor is fixed by what is wired to the CSI port, not chosen at
+# runtime. It selects config/sensors/<name>.yaml, which supplies the
+# available modes and the default one.
+
+sensor: imx477
+
+parameters:
+
+  iso:
+    key: iso
+    type: int
+    values: [100, 200, 400, 800, 1600, 3200]
+    default: 400
+    live: true
+    label: ISO
+
+  shutter_angle:
+    key: shutter_a
+    type: float
+    values: [45.0, 90.0, 135.0, 172.8, 180.0, 270.0, 360.0]
+    default: 180.0
+    unit: deg
+    live: true
+    label: SHUTTER
+
+  fps:
+    key: fps
+    type: float
+    values: [23.976, 24, 25, 29.97, 30, 48, 50, 60]
+    default: 24
+    live: false
+    label: FPS
+
+  white_balance:
+    key: awb
+    type: enum
+    values:
+      0: auto
+      1: incandescent
+      2: tungsten
+      3: fluorescent
+      4: indoor
+      5: daylight
+      6: cloudy
+      7: custom
+    default: 1
+    live: true
+    label: WB
+
+  sensor_mode:
+    key: mode
+    type: mode
+    live: false
+    label: MODE
+
+  is_recording:
+    key: is_recording
+    type: bool
+    default: false
+    live: true
+    label: REC
