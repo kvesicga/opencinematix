@@ -1,0 +1,61 @@
+# Sensor modes for the HQ Camera Module (IMX477).
+#
+# Read from `cinepi-raw --list-cameras` on a Pi 4. max_fps is what the sensor
+# reports for that mode and caps the selectable frame rates.
+#
+# packing is P on Pi 4 and U on Pi 5.
+
+sensor: imx477
+packing: P
+default_mode: 2028x1080x12
+
+modes:
+
+  2028x1080x12:
+    width: 2028
+    height: 1080
+    bit_depth: 12
+    max_fps: 62.81
+    label: 2028x1080 12BIT
+
+  2028x1080x10:
+    width: 2028
+    height: 1080
+    bit_depth: 10
+    max_fps: 74.74
+    label: 2028x1080 10BIT
+
+  2028x1520x12:
+    width: 2028
+    height: 1520
+    bit_depth: 12
+    max_fps: 45.19
+    label: 2028x1520 12BIT
+
+  2028x1520x10:
+    width: 2028
+    height: 1520
+    bit_depth: 10
+    max_fps: 53.77
+    label: 2028x1520 10BIT
+
+  1332x990x12:
+    width: 1332
+    height: 990
+    bit_depth: 12
+    max_fps: 101.68
+    label: 1332x990 12BIT
+
+  4056x2160x12:
+    width: 4056
+    height: 2160
+    bit_depth: 12
+    max_fps: 16.39
+    label: 4056x2160 12BIT
+
+  4056x3040x12:
+    width: 4056
+    height: 3040
+    bit_depth: 12
+    max_fps: 11.72
+    label: 4056x3040 12BIT
