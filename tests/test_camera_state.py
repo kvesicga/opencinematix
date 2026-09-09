@@ -31,3 +31,15 @@ def test_set_writes_to_the_mapped_redis_key(camera, clean_db):
     camera.set("shutter_angle", 180.0)
 
     assert clean_db.get("shutter_a") == "180.0"
+
+
+def test_set_rejects_invalid_value(camera):
+    with pytest.raises(ValueError):
+        camera.set("iso", 6400)
+
+
+def test_rejected_value_is_not_written(camera, clean_db):
+    with pytest.raises(ValueError):
+        camera.set("iso", 6400)
+
+    assert clean_db.get("iso") is None
