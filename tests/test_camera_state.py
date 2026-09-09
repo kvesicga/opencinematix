@@ -43,3 +43,25 @@ def test_rejected_value_is_not_written(camera, clean_db):
         camera.set("iso", 6400)
 
     assert clean_db.get("iso") is None
+
+
+def test_get_returns_converted_value(camera, clean_db):
+    clean_db.set("iso", "800")
+
+    assert camera.get("iso") == 800
+
+
+def test_get_reads_the_mapped_redis_key(camera, clean_db):
+    clean_db.set("shutter_a", "180.0")
+
+    assert camera.get("shutter_angle") == 180.0
+
+
+def test_get_returns_none_for_unset_key(camera):
+    assert camera.get("iso") is None
+
+
+def test_set_then_get_round_trip(camera):
+    camera.set("iso", 1600)
+
+    assert camera.get("iso") == 1600
