@@ -35,7 +35,25 @@ class ParameterRegistry:
             return value in definition["values"]
 
 
-       
+    def convert(self, parameter, value):
+        definition = self.parameters[parameter]
+        
+        if definition["type"] == "mode":
+            return value
+        
+        if definition["type"] == "bool":
+            if value == "1":
+                return True
+            return False
 
+        if definition["type"] == "int" or definition["type"] == "enum":
+            return int(value)
+
+        if definition["type"] == "float":
+            return float(value)
+
+        raise ValueError(f"unknown type: {definition['type']}")
+
+        
 
 
