@@ -22,7 +22,17 @@ class ParameterRegistry:
     def redis_key(self, parameter):
         return self.parameters[parameter]["key"]
 
+    def is_valid(self, parameter, value):
+        definition = self.parameters[parameter]
 
+        if definition["type"] == "mode":
+            return value in self.modes
+
+        if definition["type"] == "bool":
+            return isinstance(value, bool)
+        
+        else:
+            return value in definition["values"]
 
 
        
