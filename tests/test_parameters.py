@@ -47,3 +47,31 @@ def test_validates_enum_against_keys(registry):
 def test_validates_mode_against_sensor(registry):
     assert registry.is_valid("sensor_mode", "2028x1080x12")
     assert not registry.is_valid("sensor_mode", "8000x4000x12")
+
+
+def test_converts_text_to_int(registry):
+    assert registry.convert("iso", "800") == 800
+
+
+def test_converts_text_to_float(registry):
+    assert registry.convert("shutter_angle", "180.0") == 180.0
+
+
+def test_converts_enum_to_int(registry):
+    assert registry.convert("white_balance", "1") == 1
+
+
+def test_converts_text_to_bool(registry):
+    assert registry.convert("is_recording", "1") is True
+    assert registry.convert("is_recording", "0") is False
+
+
+def test_mode_stays_text(registry):
+    assert registry.convert("sensor_mode", "2028x1080x12") == "2028x1080x12"
+
+
+def test_unknown_type_raises(registry):
+    registry.parameters["broken"] = {"key": "broken", "type": "itn"}
+
+    with pytest.raises(ValueError):
+        registry.convert("broken", "1")
