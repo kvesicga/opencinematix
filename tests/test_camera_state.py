@@ -78,3 +78,9 @@ def test_mode_writes_dimensions_separately(camera, clean_db):
 
     assert clean_db.get("width") == "2028"
     assert clean_db.get("height") == "1520"
+
+
+def test_mode_triggers_camera_reinit(camera, clean_db):
+    camera.set("sensor_mode", "2028x1520x12")
+
+    assert clean_db.get("cam_init") is not None
