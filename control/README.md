@@ -94,8 +94,31 @@ The preview goes black briefly while the camera restarts.
 `shutter_s` is not written back when the shutter angle changes, even though
 cinepi-raw recomputes it internally. Only `shutter_a` is reliable.
 
-Not yet handled: remote changes are not forwarded to callers with parameter
-names and types, and `live: false` is not enforced during recording.
+### Remote changes
+
+Pass `on_change` to be told when another client writes a value. The callback
+receives a parameter name and a converted value, not a Redis key and text.
+
+```python
+def on_change(parameter, value):
+    print(parameter, value)          # "shutter_angle", 90.0
+
+menu = CameraState(registry, RedisClient(), on_change = on_change)
+```
+
+`CameraState` inserts itself between the client and the caller, translating
+the key back to a name and converting the value. Keys that are not in the
+configuration, such as `frameCount`, are dropped.
+
+Echo suppression still happens in the client, so a client is never told about
+its own writes.
+
+Note that cinepi-raw never publishes on `cp_controls`. It writes defaults at
+startup without notifying anyone, and only publishes frame data on
+`cp_stats`. This callback therefore only fires for other clients of this
+project, not for cinepi-raw itself.
+
+Not yet handled: `live: false` is not enforced during recording.
 
 ## Tests
 

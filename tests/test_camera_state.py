@@ -1,3 +1,5 @@
+import threading
+
 import pytest
 import redis
 
@@ -8,6 +10,7 @@ from core.parameters import ParameterRegistry
 CONFIG = "config/parameters.yaml"
 TEST_DB = 15
 TEST_CHANNEL = "test_camera"
+TIMEOUT = 2.0
 
 
 @pytest.fixture
@@ -19,8 +22,43 @@ def clean_db():
     r.flushdb()
 
 
+class Recorder:
+    """Collects callback invocations and lets a test wait for them."""
+
+    def __init__(self):
+        self.calls = []
+        self.received = threading.Event()
+
+    def __call__(self, parameter, value):
+        self.calls.append((parameter, value))
+        self.received.set()
+
+    def wait(self, timeout = TIMEOUT):
+        return self.received.wait(timeout)
+
+
 @pytest.fixture
 def camera(clean_db):
+    registry = ParameterRegistry(CONFIG)
+    client = RedisClient(db = TEST_DB, channel = TEST_CHANNEL)
+
+    return CameraState(registry, client)
+
+
+@pytest.fixture
+def watched_camera(clean_db):
+    recorder = Recorder()
+    registry = ParameterRegistry(CONFIG)
+    client = RedisClient(db = TEST_DB, channel = TEST_CHANNEL)
+
+    state = CameraState(registry, client, on_change = recorder)
+    state.recorder = recorder
+
+    return state
+
+
+@pytest.fixture
+def other_client(clean_db):
     registry = ParameterRegistry(CONFIG)
     client = RedisClient(db = TEST_DB, channel = TEST_CHANNEL)
 
@@ -84,3 +122,32 @@ def test_mode_triggers_camera_reinit(camera, clean_db):
     camera.set("sensor_mode", "2028x1520x12")
 
     assert clean_db.get("cam_init") is not None
+
+
+def test_remote_change_reports_parameter_name_and_type(watched_camera, other_client):
+    other_client.set("shutter_angle", 90.0)
+
+    assert watched_camera.recorder.wait()
+    assert watched_camera.recorder.calls == [("shutter_angle", 90.0)]
+
+
+def test_remote_int_change_is_converted(watched_camera, other_client):
+    other_client.set("iso", 1600)
+
+    assert watched_camera.recorder.wait()
+    assert watched_camera.recorder.calls == [("iso", 1600)]
+
+
+def test_own_write_is_not_reported(watched_camera):
+    watched_camera.set("iso", 800)
+
+    assert not watched_camera.recorder.wait(0.5)
+    assert watched_camera.recorder.calls == []
+
+
+def test_unknown_key_is_ignored(watched_camera, clean_db):
+    clean_db.set("frameCount", "42")
+    clean_db.publish(TEST_CHANNEL, "frameCount")
+
+    assert not watched_camera.recorder.wait(0.5)
+    assert watched_camera.recorder.calls == []

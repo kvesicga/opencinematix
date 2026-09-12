@@ -70,6 +70,15 @@ def test_mode_stays_text(registry):
     assert registry.convert("sensor_mode", "2028x1080x12") == "2028x1080x12"
 
 
+def test_resolves_redis_key_back_to_name(registry):
+    assert registry.parameter_name("shutter_a") == "shutter_angle"
+    assert registry.parameter_name("iso") == "iso"
+
+
+def test_unknown_redis_key_returns_none(registry):
+    assert registry.parameter_name("frameCount") is None
+
+
 def test_unknown_type_raises(registry):
     registry.parameters["broken"] = {"key": "broken", "type": "itn"}
 

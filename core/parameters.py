@@ -19,9 +19,17 @@ class ParameterRegistry:
         self.modes = sensor_data["modes"]
         self.default_mode = sensor_data["default_mode"]
         self.packing = sensor_data["packing"]
-        
+
+        self.names_by_key = {
+            definition["key"]: name
+            for name, definition in self.parameters.items()
+        }
+
     def redis_key(self, parameter):
         return self.parameters[parameter]["key"]
+
+    def parameter_name(self, key):
+        return self.names_by_key.get(key)
 
     def is_valid(self, parameter, value):
         definition = self.parameters[parameter]

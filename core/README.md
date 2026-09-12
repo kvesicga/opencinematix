@@ -23,6 +23,7 @@ from core.parameters import ParameterRegistry
 registry = ParameterRegistry("config/parameters.yaml")
 
 registry.redis_key("shutter_angle")          # "shutter_a"
+registry.parameter_name("shutter_a")         # "shutter_angle"
 registry.is_valid("iso", 6400)               # False
 registry.convert("iso", "800")               # 800
 ```
@@ -46,9 +47,12 @@ Conversion turns Redis text into the declared type. `bool` compares against
 `"1"` rather than using `bool()`, which would treat `"0"` as true. An
 unknown type raises `ValueError` instead of returning `None`.
 
-Not yet handled: selecting a mode has to write `width`, `height`,
-`bit_depth` and `packing` as separate keys, and shutter angle and shutter
-speed are coupled through the frame rate.
+`parameter_name` is the reverse of `redis_key` and returns `None` for keys
+that are not in the configuration, such as `frameCount`. Those are normal in
+Redis, so an unknown key is not an error here.
+
+Not yet handled: shutter angle and shutter speed are coupled through the
+frame rate, and `live: false` is not enforced.
 
 ## Tests
 
