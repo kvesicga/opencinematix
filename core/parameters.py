@@ -18,6 +18,7 @@ class ParameterRegistry:
 
         self.modes = sensor_data["modes"]
         self.default_mode = sensor_data["default_mode"]
+        self.packing = sensor_data["packing"]
         
     def redis_key(self, parameter):
         return self.parameters[parameter]["key"]
