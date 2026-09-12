@@ -24,6 +24,8 @@ class CameraState:
         self.client.set("mode",
                         f"{definition['width']}:{definition['height']}:{definition['bit_depth']}:{packing}"
                         )
+        self.client.set("cam_init", 1)
+
 
     def get(self, parameter):
 
