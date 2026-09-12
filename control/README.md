@@ -52,13 +52,58 @@ normally.
 Not yet handled: reconnection after a dropped connection, explicit shutdown,
 and type conversion.
 
+## camera_state.py
+
+`CameraState` ties the registry and the client together. Callers use
+parameter names, not Redis keys, and values are validated before they are
+written.
+
+```python
+from control.camera_state import CameraState
+from control.redis_client import RedisClient
+from core.parameters import ParameterRegistry
+
+camera = CameraState(ParameterRegistry("config/parameters.yaml"), RedisClient())
+
+camera.set("iso", 1600)
+camera.get("iso")                       # 1600, as an int
+camera.set("sensor_mode", "2028x1520x12")
+camera.set("iso", 6400)                 # raises ValueError
+```
+
+Registry and client are passed in rather than created here, so tests can
+supply a client bound to a different database.
+
+An invalid value raises `ValueError` and nothing is written. This matters:
+cinepi-raw terminates on a malformed mode string, so the check is the last
+line of defence.
+
+### Sensor mode
+
+Setting a mode writes three keys and then triggers a reinit, all verified
+against a running camera.
+
+The `mode` key must use the colon form, `2028:1520:12:P`. The parser in
+cinepi-raw reads it with `sscanf("%u:%u:%u:%c")`, so any other separator
+throws `Invalid mode` and kills the process.
+
+Writing the keys alone does nothing. The handler for `mode` only updates
+options in memory and never sets `cameraInit_`, so `cam_init` has to follow.
+The preview goes black briefly while the camera restarts.
+
+`shutter_s` is not written back when the shutter angle changes, even though
+cinepi-raw recomputes it internally. Only `shutter_a` is reliable.
+
+Not yet handled: remote changes are not forwarded to callers with parameter
+names and types, and `live: false` is not enforced during recording.
+
 ## Tests
 
-`tests/test_redis_client.py` runs against a real Redis server on database 15
-and a separate channel, so it never touches live camera state. Pub/sub
-channels are global in Redis, which is why the channel is overridden rather
-than relying on the database number alone.
+Both test files run against a real Redis server on database 15 and a
+separate channel, so they never touch live camera state. Pub/sub channels are
+global in Redis, which is why the channel is overridden rather than relying
+on the database number alone.
 
 ```bash
-python3 -m pytest tests/test_redis_client.py -v
+python3 -m pytest tests/test_redis_client.py tests/test_camera_state.py -v
 ```
