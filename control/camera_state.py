@@ -16,13 +16,18 @@ class CameraState:
         self.on_change(parameter, self.registry.convert(parameter, value))
 
     def set(self, parameter, value):
-
         if not self.registry.is_valid(parameter, value):
             raise ValueError(f"invalid value for {parameter}: {value}")
+
+        if not self._may_change(parameter):
+            raise RuntimeError(f"{parameter} cannot change while recording")
 
         if parameter == "sensor_mode":
             self._set_mode(value)
             return
+
+        if isinstance(value, bool):
+            value = int(value)
 
         key = self.registry.redis_key(parameter)
         self.client.set(key, value)
@@ -38,6 +43,11 @@ class CameraState:
                         )
         self.client.set("cam_init", 1)
 
+    def _may_change(self, parameter):
+        if self.registry.parameters[parameter]["live"]:
+            return True
+
+        return not self.get("is_recording")
 
     def get(self, parameter):
 
