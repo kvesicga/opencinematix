@@ -51,8 +51,10 @@ unknown type raises `ValueError` instead of returning `None`.
 that are not in the configuration, such as `frameCount`. Those are normal in
 Redis, so an unknown key is not an error here.
 
+The `live` flag is declared here and enforced in `CameraState`.
+
 Not yet handled: shutter angle and shutter speed are coupled through the
-frame rate, and `live: false` is not enforced.
+frame rate.
 
 ## Tests
 

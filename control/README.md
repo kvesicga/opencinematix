@@ -118,7 +118,25 @@ startup without notifying anyone, and only publishes frame data on
 `cp_stats`. This callback therefore only fires for other clients of this
 project, not for cinepi-raw itself.
 
-Not yet handled: `live: false` is not enforced during recording.
+### Recording guard
+
+A parameter marked `live: false` cannot be changed while `is_recording` is
+set. `set` raises `RuntimeError` and writes nothing.
+
+```python
+camera.set("is_recording", True)
+camera.set("sensor_mode", "2028x1520x12")   # raises RuntimeError
+camera.set("iso", 1600)                     # fine, iso is live
+```
+
+This protects a running take. A mode change writes `cam_init`, which stops
+and restarts the camera and would cut the recording short.
+
+The guard sits here rather than in the menu, so a script or a second client
+cannot bypass it. If `is_recording` is absent, changes are allowed, which
+matters before the first start.
+
+Booleans are written as `1` and `0`, since Redis rejects Python bool values.
 
 ## Tests
 
