@@ -151,3 +151,55 @@ def test_unknown_key_is_ignored(watched_camera, clean_db):
 
     assert not watched_camera.recorder.wait(0.5)
     assert watched_camera.recorder.calls == []
+
+
+def test_bool_is_written_as_one_or_zero(camera, clean_db):
+    camera.set("is_recording", True)
+    assert clean_db.get("is_recording") == "1"
+
+    camera.set("is_recording", False)
+    assert clean_db.get("is_recording") == "0"
+
+
+def test_bool_round_trip(camera):
+    camera.set("is_recording", True)
+
+    assert camera.get("is_recording") is True
+
+
+def test_live_parameter_can_change_while_recording(camera, clean_db):
+    clean_db.set("is_recording", "1")
+
+    camera.set("iso", 1600)
+
+    assert clean_db.get("iso") == "1600"
+
+
+def test_static_parameter_is_blocked_while_recording(camera, clean_db):
+    clean_db.set("is_recording", "1")
+
+    with pytest.raises(RuntimeError):
+        camera.set("sensor_mode", "2028x1520x12")
+
+
+def test_blocked_parameter_is_not_written(camera, clean_db):
+    clean_db.set("is_recording", "1")
+
+    with pytest.raises(RuntimeError):
+        camera.set("fps", 50)
+
+    assert clean_db.get("fps") is None
+
+
+def test_static_parameter_allowed_when_not_recording(camera, clean_db):
+    clean_db.set("is_recording", "0")
+
+    camera.set("fps", 50)
+
+    assert clean_db.get("fps") == "50"
+
+
+def test_static_parameter_allowed_when_key_absent(camera, clean_db):
+    camera.set("fps", 50)
+
+    assert clean_db.get("fps") == "50"
