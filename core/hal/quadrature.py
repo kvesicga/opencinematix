@@ -1,3 +1,5 @@
+DETENT = 4
+
 TRANSITIONS = {
     ((1, 1), (0, 1)): 1,
     ((0, 1), (0, 0)): 1,
@@ -14,6 +16,7 @@ class QuadratureDecoder:
 
     def __init__(self):
         self.state = (1, 1)
+        self.steps = 0
 
     def update(self, a, b):
         new_state = (a, b)
@@ -23,8 +26,15 @@ class QuadratureDecoder:
             return 0
 
         self.state = new_state
+        self.steps += direction
 
-        return direction
+        if abs(self.steps) < DETENT:
+            return 0
+
+        step = 1 if self.steps > 0 else -1
+        self.steps = 0
+
+        return step
                 
 
 
