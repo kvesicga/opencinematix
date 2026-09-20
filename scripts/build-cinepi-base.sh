@@ -98,6 +98,18 @@ stage_python_deps() {
     sudo apt-get install -y python3-redis python3-pytest
 }
 
+stage_ui_deps() {
+    log "UI dependencies"
+    sudo apt-get install -y \
+        i2c-tools \
+        python3-luma.oled \
+        python3-gpiozero \
+        python3-lgpio
+
+    printf '    i2c bus 1: %s\n' \
+        "$(i2cdetect -y 1 2>/dev/null | tail -8 | grep -oE '[0-9a-f]{2} ' | tr -d ' ' | paste -sd' ' || echo 'not readable')"
+}
+
 # Bookworm ships libtiff.so.6; the libcamera apps still link against .so.5.
 stage_libtiff_compat() {
     log "libtiff .so.5 compatibility link"
@@ -206,6 +218,7 @@ STAGES=(
     preflight
     deps
     python_deps
+    ui_deps
     libtiff_compat
     redis_pp
     libcamera
